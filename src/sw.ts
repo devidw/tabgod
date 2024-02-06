@@ -2,7 +2,8 @@
  * extension id needs to be changed when loading loacally
  * once we are in chrome web store we can make this the one chrome assigns to us
  */
-const EXT_ID = "onodejnkejiipcgcmopcfekcihihmank"
+// const EXT_ID = "onodejnkejiipcgcmopcfekcihihmank"
+const EXT_ID = "hllgifenolhiihoihflfghkfaefpjdbg" // webstore item
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.url) {

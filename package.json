@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc"
+    "build": "tsc && zip -r ext.zip ./dist"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.260",
