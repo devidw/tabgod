@@ -1,0 +1,14 @@
+{
+  "name": "tabgod",
+  "version": "12024.02.06",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.260",
+    "@types/node": "^20.11.16",
+    "typescript": "^5.3.3"
+  }
+}
