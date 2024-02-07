@@ -17,6 +17,15 @@ async function tabgod(
 }
 ```
 
+example:
+
+```js
+await tabgod(
+  (tab) => tab.url.includes("example.org"),
+  () => (document.querySelector("h1").innerText = "tabgod")
+)
+```
+
 ![](./demo.gif)
 
 ## installation
