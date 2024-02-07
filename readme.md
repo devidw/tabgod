@@ -17,6 +17,8 @@ async function tabgod(
 }
 ```
 
+![](./demo.gif)
+
 ## installation
 
 - clone repo
