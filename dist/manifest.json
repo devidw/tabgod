@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "tabgod",
     "description": "Control them all.",
-    "version": "12024.02.06",
+    "version": "12024.02.07",
     "permissions": [
         "tabs",
         "scripting"
