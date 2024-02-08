@@ -1,3 +1,4 @@
+/*
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (
     changeInfo.status !== "complete" ||
@@ -39,61 +40,70 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     }
   )
 })
+*/
 
-chrome.runtime.onMessageExternal.addListener(
-  async (
-    request: {
-      tabFilterFunc: string
-      exeFunc: string
-    },
-    sender,
-    sendResponse
-  ) => {
-    console.log(request, sender)
+chrome.runtime.onConnect.addListener((port) => {
+  port.onMessage.addListener(
+    async (
+      request: {
+        tabFilterFunc: string
+        exeFunc: string
+      },
+      port
+    ) => {
+      console.log(request, port)
 
-    const allTabs: chrome.tabs.Tab[] = await new Promise((resolve) => {
-      chrome.tabs.query({}, (tabs) => {
-        resolve(tabs)
+      const allTabs: chrome.tabs.Tab[] = await new Promise((resolve) => {
+        chrome.tabs.query({}, (tabs) => {
+          resolve(tabs)
+        })
       })
-    })
 
-    const allCompletedTabs = allTabs.filter((tab) => tab.status === "complete")
+      const allCompletedTabs = allTabs.filter(
+        (tab) => tab.status === "complete"
+      )
 
-    // we can not `eval()` or `new Function()` from the service worker (here) directlly so in order to make tab filtering
-    // callback work we have to offload the filtering to an execution enviroment where we do not have csp restrictions
-    // like in the browser extension itself, so we do it the world of a tab
-    const targetTabIds: number[] | undefined = await new Promise((resolve) => {
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: sender.tab?.id! },
-          world: "MAIN",
-          args: [allCompletedTabs, request.tabFilterFunc],
-          func: function (
-            tabs: chrome.tabs.Tab[],
-            tabFilterFunc: string
-          ): number[] {
-            // console.log(tabs, tabFilterFunc)
-            const theFilter = eval(tabFilterFunc)
-            return tabs.filter((tab) => theFilter(tab)).map((tab) => tab.id!)
-          },
-        },
-        (output) => {
-          resolve(output[0].result)
+      if (allCompletedTabs.length === 0) {
+        port.postMessage({ error: "no tabs" })
+        return
+      }
+
+      // we can not `eval()` or `new Function()` from the service worker (here) directlly so in order to make tab filtering
+      // callback work we have to offload the filtering to an execution enviroment where we do not have csp restrictions
+      // like in the browser extension itself, so we do it the world of a tab
+      const targetTabIds: number[] | undefined = await new Promise(
+        (resolve) => {
+          chrome.scripting.executeScript(
+            {
+              target: { tabId: allCompletedTabs[0].id! },
+              world: "MAIN",
+              args: [allCompletedTabs, request.tabFilterFunc],
+              func: function (
+                tabs: chrome.tabs.Tab[],
+                tabFilterFunc: string
+              ): number[] {
+                // console.log(tabs, tabFilterFunc)
+                const theFilter = eval(tabFilterFunc)
+                return tabs
+                  .filter((tab) => theFilter(tab))
+                  .map((tab) => tab.id!)
+              },
+            },
+            (output) => {
+              resolve(output[0].result)
+            }
+          )
         }
       )
-    })
 
-    if (!targetTabIds) {
-      return
-    }
+      if (!targetTabIds) {
+        port.postMessage({ error: "no tab ids" })
+        return
+      }
 
-    const outs = await Promise.all(
-      targetTabIds.map((tabId) => {
-        return Promise.race([
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("timeout")), 1000)
-          ),
-          new Promise((resolve) => {
+      const outs = await Promise.all(
+        targetTabIds.map((tabId) => {
+          return new Promise((resolve) => {
             chrome.scripting.executeScript(
               {
                 target: { tabId },
@@ -107,14 +117,14 @@ chrome.runtime.onMessageExternal.addListener(
               },
               (out) => {
                 console.table(out)
-                resolve(out[0].result)
+                resolve({ tabId, result: out[0].result })
               }
             )
-          }),
-        ])
-      })
-    )
+          })
+        })
+      )
 
-    sendResponse(outs)
-  }
-)
+      port.postMessage(outs)
+    }
+  )
+})

@@ -3,6 +3,8 @@
     "name": "tabgod",
     "description": "Control them all.",
     "version": "12024.02.07",
+    "devtools_page": "./dev.html",
+    "options_page": "./dev.html",
     "permissions": [
         "tabs",
         "scripting"
