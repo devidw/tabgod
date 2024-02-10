@@ -4,17 +4,21 @@
   tabgod
 </h1>
 
-execute _any_ javascript from _any_ browser tab on _any_ browser tabs
+execute _any_ javascript on _any_ chromium tabs
 
-- adds devtools panel & options page
+- adds options page with `tabgod()` function
 
-![](./demo.png)
+```ts
+async function tabgod(
+  tabFilterFunc: (tab: chrome.tabs.Tab) => boolean,
+  exeFunc: () => unknown,
+  exeArgs?: unknown[],
+): Promise<{ tabId: number; result: unknown }[]> {
+  //
+}
+```
 
-- initial api was a function to call from devtools console, but since it was
-  added to global window object, it also exposed a security risk of websites
-  starting to use that function to do bad things
-  - thanks
-    [danielsmc pointing it out](https://github.com/devidw/tabgod/issues/1#issue-2124285330)
+![](./demo.gif)
 
 ## installation
 
@@ -26,19 +30,33 @@ execute _any_ javascript from _any_ browser tab on _any_ browser tabs
 
 ## usage
 
-1. choose execution targets by writing a filter function that will
-   include/excluce tabs based on defined criteria
-   - https://developer.chrome.com/docs/extensions/reference/api/tabs#type-Tab
-2. write any js to execute in world of targeted tabs
+1. open extensions options page
+2. open devtools console
+3. use provided `tabgod()` function
+   1. choose execution targets by writing a filter function that will
+      include/excluce tabs based on defined criteria
+      - https://developer.chrome.com/docs/extensions/reference/api/tabs#type-Tab
+   2. write any js to execute in world of targeted tabs
+   3. optionally specify arg values, usefull when wrapping tabgod
 
 ```js
-((tab) => {
-  return tab.url.includes("example.org");
-});
+tabgod(
+  (tab) => tab.url.includes("example.org"),
+  (color) => document.body.style.background = color,
+  ["pink"],
+);
 ```
 
-```js
-(() => {
-  document.body.style.background = "pink";
-});
-```
+## notes on first release
+
+- initial idea was to make tabgod function available in all devtools consoles
+  for easy and direct access for developers right from every console
+- the implementation added tabgod to the global window object
+- however this introduced a serious security issue, since this has made the
+  function avaialbe to websites also, allowing them to interact with other tabs,
+  destroying the idea of secure tab origins
+- thanks to
+  [danielsmc pointing it out](https://github.com/devidw/tabgod/issues/1#issue-2124285330)
+- this has been immediately addressed by moving the function only to the options
+  page of the extension, and not accepting external connections in the service
+  worker

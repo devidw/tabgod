@@ -44,7 +44,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 */
 chrome.runtime.onConnect.addListener((port) => {
     port.onMessage.addListener(async (request, port) => {
-        console.log(request, port);
+        // console.log(request, port)
         const allTabs = await new Promise((resolve) => {
             chrome.tabs.query({}, (tabs) => {
                 resolve(tabs);
@@ -55,12 +55,16 @@ chrome.runtime.onConnect.addListener((port) => {
             port.postMessage({ error: "no tabs" });
             return;
         }
+        const tmpTab = await chrome.tabs.create({
+            url: "https://example.org",
+            active: false,
+        });
         // we can not `eval()` or `new Function()` from the service worker (here) directlly so in order to make tab filtering
         // callback work we have to offload the filtering to an execution enviroment where we do not have csp restrictions
         // like in the browser extension itself, so we do it the world of a tab
         const targetTabIds = await new Promise((resolve) => {
             chrome.scripting.executeScript({
-                target: { tabId: allCompletedTabs[0].id },
+                target: { tabId: tmpTab.id },
                 world: "MAIN",
                 args: [allCompletedTabs, request.tabFilterFunc],
                 func: function (tabs, tabFilterFunc) {
@@ -71,9 +75,15 @@ chrome.runtime.onConnect.addListener((port) => {
                         .map((tab) => tab.id);
                 },
             }, (output) => {
-                resolve(output[0].result);
+                // console.log(output)
+                if (Array.isArray(output) && output.length > 0) {
+                    resolve(output[0].result);
+                    return;
+                }
+                resolve(undefined);
             });
         });
+        chrome.tabs.remove(tmpTab.id);
         if (!targetTabIds) {
             port.postMessage({ error: "no tab ids" });
             return;
@@ -83,14 +93,13 @@ chrome.runtime.onConnect.addListener((port) => {
                 chrome.scripting.executeScript({
                     target: { tabId },
                     world: "MAIN",
-                    args: [request.exeFunc],
-                    func: function (theCode) {
+                    args: [request.exeFunc, request.exeArgs ?? []],
+                    func: function (theCode, theArgs) {
                         console.log("tabgod target");
                         // return eval("'hey'")
-                        return eval(`(${theCode})()`);
+                        return eval(`(${theCode})(...${JSON.stringify(theArgs)})`);
                     },
                 }, (out) => {
-                    console.table(out);
                     resolve({ tabId, result: out[0].result });
                 });
             });

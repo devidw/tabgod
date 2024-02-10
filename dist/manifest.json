@@ -2,8 +2,7 @@
     "manifest_version": 3,
     "name": "tabgod",
     "description": "Control them all.",
-    "version": "12024.02.07",
-    "devtools_page": "./dev.html",
+    "version": "12024.02.10",
     "options_page": "./dev.html",
     "permissions": [
         "tabs",
@@ -15,11 +14,6 @@
     "host_permissions": [
         "<all_urls>"
     ],
-    "externally_connectable": {
-        "matches": [
-            "<all_urls>"
-        ]
-    },
     "icons": {
         "16": "tabgod.png",
         "48": "tabgod.png",
