@@ -52,7 +52,11 @@ chrome.runtime.onConnect.addListener((port) => {
         });
         const allCompletedTabs = allTabs.filter((tab) => tab.status === "complete");
         if (allCompletedTabs.length === 0) {
-            port.postMessage({ error: "no tabs" });
+            port.postMessage({
+                id: request.id,
+                error: "no tabs",
+                data: null,
+            });
             return;
         }
         const tmpTab = await chrome.tabs.create({
@@ -66,12 +70,16 @@ chrome.runtime.onConnect.addListener((port) => {
             chrome.scripting.executeScript({
                 target: { tabId: tmpTab.id },
                 world: "MAIN",
-                args: [allCompletedTabs, request.tabFilterFunc],
-                func: function (tabs, tabFilterFunc) {
+                args: [
+                    allCompletedTabs,
+                    request.tabFilterFunc,
+                    request.options?.tabFilterArgs ?? [],
+                ],
+                func: function (tabs, tabFilterFunc, args) {
                     // console.log(tabs, tabFilterFunc)
                     const theFilter = eval(tabFilterFunc);
                     return tabs
-                        .filter((tab) => theFilter(tab))
+                        .filter((tab) => theFilter(tab, ...args))
                         .map((tab) => tab.id);
                 },
             }, (output) => {
@@ -85,7 +93,11 @@ chrome.runtime.onConnect.addListener((port) => {
         });
         chrome.tabs.remove(tmpTab.id);
         if (!targetTabIds) {
-            port.postMessage({ error: "no tab ids" });
+            port.postMessage({
+                id: request.id,
+                error: "no tab ids",
+                data: null,
+            });
             return;
         }
         const outs = await Promise.all(targetTabIds.map((tabId) => {
@@ -93,17 +105,26 @@ chrome.runtime.onConnect.addListener((port) => {
                 chrome.scripting.executeScript({
                     target: { tabId },
                     world: "MAIN",
-                    args: [request.exeFunc, request.exeArgs ?? []],
-                    func: function (theCode, theArgs) {
-                        console.log("tabgod target");
-                        // return eval("'hey'")
-                        return eval(`(${theCode})(...${JSON.stringify(theArgs)})`);
+                    args: [
+                        request.exeFunc,
+                        request.options?.exeArgs ?? [],
+                        request.options?.evalAdd ?? "",
+                    ],
+                    func: function (theCode, args, evalAdd) {
+                        console.group("tabgod");
+                        console.log({ theCode, args, evalAdd });
+                        console.groupEnd();
+                        return eval(`${evalAdd}(${theCode})(...${JSON.stringify(args)})`);
                     },
                 }, (out) => {
                     resolve({ tabId, result: out[0].result });
                 });
             });
         }));
-        port.postMessage(outs);
+        port.postMessage({
+            id: request.id,
+            error: null,
+            data: outs,
+        });
     });
 });

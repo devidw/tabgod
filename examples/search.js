@@ -1,3 +1,7 @@
+/**
+ * @typedef {import("../global.d.ts")}
+ */
+
 function google(q) {
   return tabgod(
     (tab) => tab.url.includes("google.com/search"),
@@ -5,7 +9,9 @@ function google(q) {
       document.querySelector(`textarea[maxlength="2048"]`).value = q
       document.querySelector(`button[aria-label="Search"]`).click()
     },
-    [q]
+    {
+      exeArgs: [q],
+    }
   )
 }
 
@@ -16,7 +22,9 @@ function duck(q) {
       document.querySelector(`input[name="q"]`).value = q
       document.querySelector(`#search_button`).click()
     },
-    [q]
+    {
+      exeArgs: [q],
+    }
   )
 }
 

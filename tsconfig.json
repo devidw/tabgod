@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "checkJs": true,
+    "allowJs": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -9,5 +11,10 @@
     "target": "ESNext",
     "skipLibCheck": true
   },
-  "include": ["src/**/*"]
+  "include": ["**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "examples/**/*"
+  ]
 }

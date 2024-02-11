@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="./dist/tabgod.png" width="128" height="128" />
+  <img src="./tabgod.png" width="128" height="128" />
   <br />
   tabgod
 </h1>
@@ -10,9 +10,13 @@ execute _any_ javascript on _any_ chromium tabs
 
 ```ts
 async function tabgod(
-  tabFilterFunc: (tab: chrome.tabs.Tab) => boolean,
-  exeFunc: () => unknown,
-  exeArgs?: unknown[],
+  tabFilterFunc: (tab: chrome.tabs.Tab, ...args: unknown[]) => boolean,
+  exeFunc: (...args: unknown[]) => unknown,
+  options?: {
+    tabFilterArgs?: unknown[];
+    exeArgs?: unknown[];
+    evalAdd?: string;
+  },
 ): Promise<{ tabId: number; result: unknown }[]> {
   //
 }
@@ -37,13 +41,11 @@ async function tabgod(
       include/excluce tabs based on defined criteria
       - https://developer.chrome.com/docs/extensions/reference/api/tabs#type-Tab
    2. write any js to execute in world of targeted tabs
-   3. optionally specify arg values, usefull when wrapping tabgod
 
 ```js
 tabgod(
   (tab) => tab.url.includes("example.org"),
-  (color) => document.body.style.background = color,
-  ["pink"],
+  () => document.body.style.background = "pink",
 );
 ```
 

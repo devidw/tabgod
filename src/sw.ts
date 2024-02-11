@@ -46,9 +46,14 @@ chrome.runtime.onConnect.addListener((port) => {
   port.onMessage.addListener(
     async (
       request: {
+        id: string
         tabFilterFunc: string
         exeFunc: string
-        exeArgs?: unknown[]
+        options?: {
+          tabFilterArgs?: unknown[]
+          exeArgs?: unknown[]
+          evalAdd?: string
+        }
       },
       port
     ) => {
@@ -65,7 +70,11 @@ chrome.runtime.onConnect.addListener((port) => {
       )
 
       if (allCompletedTabs.length === 0) {
-        port.postMessage({ error: "no tabs" })
+        port.postMessage({
+          id: request.id,
+          error: "no tabs",
+          data: null,
+        })
         return
       }
 
@@ -83,15 +92,20 @@ chrome.runtime.onConnect.addListener((port) => {
             {
               target: { tabId: tmpTab.id! },
               world: "MAIN",
-              args: [allCompletedTabs, request.tabFilterFunc],
+              args: [
+                allCompletedTabs,
+                request.tabFilterFunc,
+                request.options?.tabFilterArgs ?? [],
+              ],
               func: function (
                 tabs: chrome.tabs.Tab[],
-                tabFilterFunc: string
+                tabFilterFunc: string,
+                args: unknown[]
               ): number[] {
                 // console.log(tabs, tabFilterFunc)
                 const theFilter = eval(tabFilterFunc)
                 return tabs
-                  .filter((tab) => theFilter(tab))
+                  .filter((tab) => theFilter(tab, ...args))
                   .map((tab) => tab.id!)
               },
             },
@@ -110,7 +124,11 @@ chrome.runtime.onConnect.addListener((port) => {
       chrome.tabs.remove(tmpTab.id!)
 
       if (!targetTabIds) {
-        port.postMessage({ error: "no tab ids" })
+        port.postMessage({
+          id: request.id,
+          error: "no tab ids",
+          data: null,
+        })
         return
       }
 
@@ -121,11 +139,23 @@ chrome.runtime.onConnect.addListener((port) => {
               {
                 target: { tabId },
                 world: "MAIN",
-                args: [request.exeFunc, request.exeArgs ?? []],
-                func: function (theCode: string, theArgs: unknown[]): unknown {
-                  console.log("tabgod target")
-                  // return eval("'hey'")
-                  return eval(`(${theCode})(...${JSON.stringify(theArgs)})`)
+                args: [
+                  request.exeFunc,
+                  request.options?.exeArgs ?? [],
+                  request.options?.evalAdd ?? "",
+                ],
+                func: function (
+                  theCode: string,
+                  args: unknown[],
+                  evalAdd: string
+                ): unknown {
+                  console.group("tabgod")
+                  console.log({ theCode, args, evalAdd })
+                  console.groupEnd()
+
+                  return eval(
+                    `${evalAdd}(${theCode})(...${JSON.stringify(args)})`
+                  )
                 },
               },
               (out) => {
@@ -136,7 +166,11 @@ chrome.runtime.onConnect.addListener((port) => {
         })
       )
 
-      port.postMessage(outs)
+      port.postMessage({
+        id: request.id,
+        error: null,
+        data: outs,
+      })
     }
   )
 })

@@ -14,9 +14,14 @@
     "host_permissions": [
         "<all_urls>"
     ],
+    "externally_connectable": {
+        "matches": [
+            "<all_urls>"
+        ]
+    },
     "icons": {
-        "16": "tabgod.png",
-        "48": "tabgod.png",
-        "128": "tabgod.png"
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
     }
 }
