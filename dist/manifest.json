@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "tabgod",
-    "description": "Control them all.",
-    "version": "12024.02.10",
+    "name": "Tabgod: Cross-tab JavaScript execution",
+    "description": "Easily execute JavaScript across multiple chromium tabs in parallel.",
+    "version": "12024.02.11",
     "options_page": "./dev.html",
     "permissions": [
         "tabs",

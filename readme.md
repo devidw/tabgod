@@ -22,7 +22,15 @@ async function tabgod(
 }
 ```
 
-![](./demo.gif)
+## examples
+
+having chatgpt and pi talk to each other
+
+https://github.com/devidw/tabgod/assets/68775926/d103bf67-5ed6-4e34-bb96-7b35d42f9d2d
+
+searching same query on multiple search engines
+
+![](./examples/search/demo.gif)
 
 ## installation
 

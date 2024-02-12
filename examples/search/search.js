@@ -1,5 +1,5 @@
 /**
- * @typedef {import("../global.d.ts")}
+ * @typedef {import("../../src/global")}
  */
 
 function google(q) {
