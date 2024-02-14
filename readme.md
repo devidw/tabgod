@@ -1,7 +1,11 @@
 <h1 align="center">
-  <img src="./tabgod.png" width="128" height="128" />
-  <br />
-  tabgod
+  <a href="https://chromewebstore.google.com/detail/hllgifenolhiihoihflfghkfaefpjdbg">
+    <img src="https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/UV4C4ybeBTsZt43U4xis.png" width="128">
+    <br />
+    <img src="./tabgod.png" width="128" height="128" />
+    <br />
+    tabgod
+  </a>
 </h1>
 
 execute _any_ javascript on _any_ chromium tabs
@@ -31,14 +35,6 @@ https://github.com/devidw/tabgod/assets/68775926/d103bf67-5ed6-4e34-bb96-7b35d42
 searching same query on multiple search engines
 
 ![](./examples/search/demo.gif)
-
-## installation
-
-- clone repo
-- goto _your-chromium-based-browser://extensions/_
-  - example: _arc://extensions/_
-- make sure to have 'Developer mode' enabled
-- 'Load unpacked' choose path to ./dist of repo
 
 ## usage
 
