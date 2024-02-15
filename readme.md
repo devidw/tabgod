@@ -59,7 +59,7 @@ tabgod(
   for easy and direct access for developers right from every console
 - the implementation added tabgod to the global window object
 - however this introduced a serious security issue, since this has made the
-  function avaialbe to websites also, allowing them to interact with other tabs,
+  function available to websites also, allowing them to interact with other tabs,
   destroying the idea of secure tab origins
 - thanks to
   [danielsmc pointing it out](https://github.com/devidw/tabgod/issues/1#issue-2124285330)
